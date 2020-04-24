@@ -1,0 +1,46 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        canvas {
+            background: #eee;
+            display: block;
+            margin: 0 auto;
+        }
+        .button {
+            width: 200px;
+            height: 200px;
+            text-align: center;
+            margin-top: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            justify-content: center;
+        }
+        #xlabel, #ylabel, #score {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <p id="xlabel">loading</p>
+    <p id="ylabel">loading</p>
+    <p id="score">Score: 0</p>
+    <canvas id="canvas" width="480" height="320"></canvas>
+    <button class="button" onclick="createNewObject()">Create player</button>
+    <button class="button" onclick="movePlayer()">Move</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
+    <script src="js/newindex.js"></script>
+</body>
+
+</html>
