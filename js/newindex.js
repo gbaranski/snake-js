@@ -9,6 +9,7 @@ class Snake {
     constructor() {
         this.parts = []
         this.parts.push(new Part(100, 100))
+        console.log(this.parts);
     }
     extend() {
         const { x, y } = this.parts[this.parts.length - 1]
@@ -19,8 +20,11 @@ class Snake {
         this.parts.forEach((part, index) => {
             ctx.beginPath();
             ctx.arc(part.x, part.y, 10, 0, Math.PI * 2);
-            let color = "#212121"
-            ctx.fillStyle = color;
+            if(index == 0) {
+                ctx.fillStyle = "#fff000";
+            } else{
+                ctx.fillStyle = "#212121";
+            }
             ctx.fill();
             ctx.closePath();
         })
@@ -29,17 +33,13 @@ class Snake {
         return this.parts[0];
     }
     move(xVelocity, yVelocity) {
-        const newHead = this.parts[0]
+        const newHead = this.parts[0];
         newHead.x += xVelocity;
         newHead.y += yVelocity;
-        if(this.parts.length > 1) {
-            const newParts = this.parts
-                .filter((_, index) => index > 0)
-                .map((_, index) => new Part(this.parts[index].x, this.parts[index].y))
-                this.parts = [newHead, ...newParts];
-        }else{
-            this.parts[0] = newHead;
-        }
+        const newParts = this.parts
+            .filter((_, index) => index > 0)
+            .map((_, index) => new Part(this.parts[index].x, this.parts[index].y));
+            this.parts = [newHead, ...newParts];
     }
     
 }
@@ -89,6 +89,34 @@ class GameState {
             this.snake.extend();
         }
     }
+    checkIfCollideWithWall(canvas) {
+        if(this.snake.getHeadPosition().x>=canvas.width) {
+            return true;
+        }
+        if(this.snake.getHeadPosition().x<=0){
+            return true;
+        }
+        if(this.snake.getHeadPosition().y>=canvas.height) {
+            return true;
+        }
+        if(this.snake.getHeadPosition().y<=0) {
+            return true;
+        }
+        return false;
+    }
+    drawGrid(canvas, ctx) {
+        for (var x = 0.5; x < canvas.width; x += 20) {
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, canvas.height);
+          }
+          
+          for (var y = 0.5; y < canvas.height; y += 20) {
+            ctx.moveTo(0, y);
+            ctx.lineTo(480, y);
+          }
+          ctx.strokeStyle = "#ddd";
+          ctx.stroke();
+        }
 };
 
 
@@ -116,17 +144,25 @@ function handleKeyPress(key) {
 $(document).ready(function () {
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
+    
     gameState.draw(ctx);
     document.onkeydown = function (key) {
         handleKeyPress(key);
     }
-    setInterval(function () {
+    const renderGameInterval = setInterval(function () {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+        gameState.drawGrid(canvas, ctx);
         gameState.draw(ctx);
+        
     }, 10)
-    setInterval(function () {
+    const tickSnakeInterval = setInterval(function () {
         gameState.move();   
         gameState.checkIfCollideWithApple(); 
+        if(gameState.checkIfCollideWithWall(canvas)) {
+            console.log("Snake is dead");
+            clearInterval(tickSnakeInterval);
+            clearInterval(renderGameInterval);
+        }
     }, 100)
     
 
