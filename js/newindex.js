@@ -35,7 +35,7 @@ class Snake {
         newHead.x += xVelocity;
         newHead.y += yVelocity;
         const newParts = this.parts
-            .filter((_, index, arr) => index > 0)
+            .filter((_, index) => index > 0)
             .map((_, index) => new Part(this.parts[index].x, this.parts[index].y));
         this.parts = [newHead, ...newParts];
     }
@@ -52,7 +52,7 @@ class Apple {
     }
     draw(ctx) {
         ctx.beginPath();
-        ctx.rect(this.x, this.y, 10, 10);
+        ctx.rect(this.x, this.y, 20, 20);
         ctx.strokeStyle = "#ff0000";
         ctx.stroke();
         ctx.closePath();
@@ -74,7 +74,6 @@ class Canvas {
         this.gameState.snake.draw(this.ctx);
         this.gameState.apple.draw(this.ctx);
     }
-
     drawGrid() {
         for (let x = 0.5; x < this.canvas.width; x += 20) {
             this.ctx.moveTo(x, 0);
@@ -88,10 +87,14 @@ class Canvas {
         this.ctx.strokeStyle = "#ddd";
         this.ctx.stroke();
     }
+    drawScore() {
+        this.ctx.fillStyle = "gray";
+        this.ctx.font = "10px Montserrat";
+        this.ctx.fillText(`Score: ${gameState.score}`, 5, 10);
+    }
     clearRect() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
-
 }
 class GameState {
     constructor(canvasWidth, canvasHeight) {
@@ -100,6 +103,7 @@ class GameState {
         this.canvasWidth = canvasWidth;
         this.canvasHeight = canvasHeight;
         this.apple.respawn(canvasWidth, canvasHeight);
+        this.score = 0;
     }
 
     move() {
@@ -118,6 +122,7 @@ class GameState {
             && Math.abs(this.snake.getHeadPosition().y - this.apple.getPosistion().y) < 20) {
             this.apple.respawn(this.canvasWidth, this.canvasHeight);
             this.snake.extend(this.dx || 0, this.dy || 0);
+            this.score = this.score + 1;
         }
     }
     checkIfCollideWithWall() {
@@ -165,6 +170,7 @@ $(document).ready(function () {
         gameCanvas.clearRect();
         gameCanvas.drawGrid();
         gameCanvas.draw();
+        gameCanvas.drawScore();
     }, 3)
     const tickSnakeInterval = setInterval(function () {
         gameState.move();
