@@ -9,12 +9,10 @@ class Snake {
     constructor() {
         this.parts = []
         this.parts.push(new Part(100, 100))
-        console.log(this.parts);
     }
-    extend() {
+    extend(dx, dy) {
         const { x, y } = this.parts[this.parts.length - 1]
-        console.log({ x, y })
-        this.parts.push(new Part(x, y))
+        this.parts.push(new Part(x-dx, y-dy))
     }
     draw(ctx) {
         this.parts.forEach((part, index) => {
@@ -40,6 +38,9 @@ class Snake {
             .filter((_, index, arr) => index > 0)
             .map((_, index) => new Part(this.parts[index].x, this.parts[index].y));
         this.parts = [newHead, ...newParts];
+    }
+    getTail() {
+        return this.parts.slice(1);
     }
 
 }
@@ -106,14 +107,18 @@ class GameState {
         this.snake.move(this.dx || 0, this.dy || 0);
     }
     changeDirection(dx, dy) {
-        this.dx = dx;
-        this.dy = dy;
+        if(this.dx == -dx || this.dy == -dy && this.snake.getTail().length > 1) {
+        } else {
+            this.dx = dx;
+            this.dy = dy;
+        }
+
     }
     checkIfCollideWithApple() {
         if (Math.abs(this.snake.getHeadPosition().x - this.apple.getPosistion().x) < 20
             && Math.abs(this.snake.getHeadPosition().y - this.apple.getPosistion().y) < 20) {
             this.apple.respawn(this.canvasWidth, this.canvasHeight);
-            this.snake.extend();
+            this.snake.extend(this.dx || 0, this.dy || 0);
         }
     }
     checkIfCollideWithWall() {
@@ -130,6 +135,16 @@ class GameState {
             return true;
         }
         return false;
+    }
+    checkIfCollideWithTail() {
+        return this.snake.getTail().some(coordinates => {
+            if(coordinates.x === this.snake.getHeadPosition().x 
+            && coordinates.y === this.snake.getHeadPosition().y) {
+                return true;
+            }
+            return false;
+        });
+        
     }
 
 };
@@ -151,15 +166,15 @@ $(document).ready(function () {
         gameCanvas.clearRect();
         gameCanvas.drawGrid();
         gameCanvas.draw();
-    }, 10)
+    }, 3)
     const tickSnakeInterval = setInterval(function () {
         gameState.move();
         gameState.checkIfCollideWithApple();
-        if (gameState.checkIfCollideWithWall()) {
+        if (gameState.checkIfCollideWithWall() || gameState.checkIfCollideWithTail()) {
             clearInterval(tickSnakeInterval);
             clearInterval(renderGameInterval);
         }
-    }, 100)
+    }, 20)
 
 
 });
@@ -168,16 +183,16 @@ $(document).ready(function () {
 function handleKeyPress(key) {
     switch (key.keyCode) {
         case 37:
-            gameState.changeDirection(-10, 0);
+            gameState.changeDirection(-5, 0);
             break;
         case 38:
-            gameState.changeDirection(0, -10);
+            gameState.changeDirection(0, -5);
             break;
         case 39:
-            gameState.changeDirection(10, 0);
+            gameState.changeDirection(5, 0);
             break;
         case 40:
-            gameState.changeDirection(0, 10);
+            gameState.changeDirection(0, 5);
             break;
     }
 }
