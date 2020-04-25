@@ -18,10 +18,10 @@ class Snake {
         this.parts.forEach((part, index) => {
             ctx.beginPath();
             ctx.arc(part.x, part.y, 10, 0, Math.PI * 2);
-            if (index == 0) {
-                ctx.fillStyle = "#fff000";
-            } else {
-                ctx.fillStyle = "#212121";
+            if(index == 0) {
+                ctx.fillStyle = "#ff0000";
+            } else{
+                ctx.fillStyle = `rgb(${255 * index / this.parts.length * index % 3}, ${255 * index / this.parts.length}, ${255 * index / this.parts.length * index % 3})`;
             }
             ctx.fill();
             ctx.closePath();
@@ -46,9 +46,8 @@ class Snake {
 }
 
 class Apple {
-
     respawn(canvasWidth, canvasHeight) {
-        this.x = Math.floor(Math.random() * Math.floor((canvasWidth / 1.1) / 10)) * 10;
+        this.x = Math.floor(Math.random() * Math.floor((canvasWidth / 1.1) / 10)) * 10 ;
         this.y = Math.floor(Math.random() * Math.floor((canvasHeight / 1.3) / 10)) * 10;
     }
     draw(ctx) {
