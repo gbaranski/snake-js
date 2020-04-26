@@ -1,114 +1,206 @@
-var canvas = document.getElementById("canvas");
-var ctx = canvas.getContext("2d");
-var ballRadius = 10;
-var x = canvas.width / 2;
-var y = canvas.height /2;
-var yCells = [];
-var xCells = [];
-var dx = 10; // velocity
-var dy = -10; // velocity
-var objectX;
-var objectY;
-var score = 0;
-var color = '#' + Math.random().toString(16).substr(-6);
-var moveDirectory;
-
-function createNewObject() {
-    objectX = Math.floor(Math.random() * Math.floor((canvas.width/1.1) / 10)) * 10;
-    objectY = Math.floor(Math.random() * Math.floor((canvas.height/1.3) / 10)) * 10;
+class Part {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
 }
 
-function drawBall() {
-    ctx.beginPath();
-    ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
-    for(let i = 0; i<xCells.length; i++) {
-        ctx.arc(xCells[i], yCells[i] + 10, ballRadius, 0, Math.PI * 2);
-        
-        if(xCells[i] < x) {
-            xCells[i]+=dx/10;
-        }else {
-            xCells[i]-=dx/10;
+class Snake {
+    constructor() {
+        this.parts = []
+        this.parts.push(new Part(100, 100))
+    }
+    extend(dx, dy) {
+        const { x, y } = this.parts[this.parts.length - 1]
+        this.parts.push(new Part(x - dx, y - dy))
+    }
+    draw(ctx) {
+        this.parts.forEach((part, index) => {
+            ctx.beginPath();
+            ctx.arc(part.x, part.y, 10, 0, Math.PI * 2);
+            if (index == 0) {
+                ctx.fillStyle = "#ff0000";
+            } else {
+                ctx.fillStyle = `rgb(${255 * index / this.parts.length * index % 3}, ${255 * index / this.parts.length}, ${255 * index / this.parts.length * index % 3})`;
+            }
+            ctx.fill();
+            ctx.closePath();
+        })
+    }
+    getHeadPosition() {
+        return this.parts[0];
+    }
+    move(xVelocity, yVelocity) {
+        const newHead = new Part(this.parts[0].x, this.parts[0].y)
+        newHead.x += xVelocity;
+        newHead.y += yVelocity;
+        const newParts = this.parts
+            .filter((_, index) => index > 0)
+            .map((_, index) => new Part(this.parts[index].x, this.parts[index].y));
+        this.parts = [newHead, ...newParts];
+    }
+    getTail() {
+        return this.parts.slice(1);
+    }
+
+}
+
+class Apple {
+    constructor() {
+        this.appleIcon = new Image();
+        this.appleIcon.src = "assets/apple.png";
+        this.scaleMultiplier = 5;
+    }
+    respawn(canvasWidth, canvasHeight) {
+        this.scaleMultiplier = 0;
+        this.x = Math.floor(Math.random() * Math.floor((canvasWidth / 1.1) / 10)) * 10;
+        this.y = Math.floor(Math.random() * Math.floor((canvasHeight / 1.3) / 10)) * 10;
+    }
+    draw(ctx) {
+        if(this.scaleMultiplier < 5) {
+            this.scaleMultiplier = this.scaleMultiplier + 0.3;
+        }
+        this.appleObject = ctx.drawImage(this.appleIcon, this.x, this.y, this.appleIcon.width * this.scaleMultiplier / 100, this.appleIcon.height * this.scaleMultiplier / 100);
+    }
+    getPosistion() {
+        return {
+            x: this.x,
+            y: this.y
+        }
+    }
+}
+class Canvas {
+    constructor(canvas, ctx, gameState) {
+        this.canvas = canvas
+        this.ctx = ctx
+        this.gameState = gameState
+    }
+    draw() {
+        this.gameState.snake.draw(this.ctx);
+        this.gameState.apple.draw(this.ctx);
+    }
+    drawGrid() {
+        for (let x = 0.5; x < this.canvas.width; x += 20) {
+            this.ctx.moveTo(x, 0);
+            this.ctx.lineTo(x, this.canvas.height);
         }
 
-        if(yCells[i] < y) {
-            yCells[i]-=dy/10;
-        }else {
-            yCells[i]+=dy/10;
+        for (let y = 0.5; y < this.canvas.height; y += 20) {
+            this.ctx.moveTo(0, y);
+            this.ctx.lineTo(this.canvas.width, y);
         }
-        
+        this.ctx.strokeStyle = "#ddd";
+        this.ctx.stroke();
     }
-    console.log(xCells);
-    ctx.fillStyle = color;
-    ctx.fill();
-    ctx.closePath();
+    drawScore() {
+        this.ctx.fillStyle = "gray";
+        this.ctx.font = "10px Montserrat";
+        this.ctx.fillText(`Score: ${gameState.score}`, 5, 10);
+    }
+    clearRect() {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
 }
+class GameState {
+    constructor(canvasWidth, canvasHeight) {
+        this.snake = new Snake();
+        this.apple = new Apple();
+        this.canvasWidth = canvasWidth;
+        this.canvasHeight = canvasHeight;
+        this.apple.respawn(canvasWidth, canvasHeight);
+        this.score = 0;
+    }
 
-function drawObject() {
-    ctx.beginPath();
-    // ctx.arc(objectX, objectY, ballRadius, 0, Math.PI * 2);
-    ctx.rect(objectX, objectY, ballRadius, ballRadius);
-    ctx.strokeStyle = "#ff0000";
-    ctx.stroke();
-    ctx.closePath();
-}
-function draw() {
-    if(Math.abs(objectX-x) < 20 && Math.abs(objectY-y) < 20 ) {
-        createNewObject();
-        xCells.push(x);
-        yCells.push(y);
-        score++;
-        document.getElementById("score").innerText = "Score: " + score;
+    move() {
+        this.snake.move(this.dx || 0, this.dy || 0);
     }
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawBall();
-    drawObject();
-    document.getElementById('xlabel').innerText = "x: " + x;
-    document.getElementById('ylabel').innerText = "y: " + y;
-    switch(moveDirectory) {
-        case "up":
-            y+=dy/10;
-            break;
-        case "left":
-            x-=dx/10;
-            break;
-        case "right":
-            x+=dx/10;
-            break;
-        case "down":
-            y-=dy/10;
-            break;
-    }
-    if(x>canvas.width) {
-        x = 0; 
-    }
-    if(x<0){
-        x=canvas.width;
-    }
-    if(y>canvas.height) {
-        y = 0;
-    }
-    if(y<0) {
-        y=canvas.height;
-    }
-    
-}
+    changeDirection(dx, dy) {
+        if (this.dx == -dx || this.dy == -dy && this.snake.getTail().length > 1) {
+        } else {
+            this.dx = dx;
+            this.dy = dy;
+        }
 
-document.onkeydown = function (key) {
-    switch (key.keyCode) {
-        case 37:
-            moveDirectory = "left";
-            break;
-        case 38:
-            moveDirectory = "up";
-            break;
-        case 39:
-            moveDirectory = "right";
-            break;
-        case 40:
-            moveDirectory = "down";
-            break;
     }
+    checkIfCollideWithApple() {
+        if (Math.abs(this.snake.getHeadPosition().x - this.apple.getPosistion().x) < 30
+            && Math.abs(this.snake.getHeadPosition().y - this.apple.getPosistion().y) < 30) {
+            this.apple.respawn(this.canvasWidth, this.canvasHeight);
+            this.snake.extend(this.dx || 0, this.dy || 0);
+            this.score = this.score + 1;
+        }
+    }
+    checkIfCollideWithWall() {
+        if (this.snake.getHeadPosition().x >= this.canvasWidth) {
+            return true;
+        }
+        if (this.snake.getHeadPosition().x <= 0) {
+            return true;
+        }
+        if (this.snake.getHeadPosition().y >= this.canvasHeight) {
+            return true;
+        }
+        if (this.snake.getHeadPosition().y <= 0) {
+            return true;
+        }
+        return false;
+    }
+    checkIfCollideWithTail() {
+        return this.snake.getTail().some(coordinates => {
+            if (coordinates.x === this.snake.getHeadPosition().x
+                && coordinates.y === this.snake.getHeadPosition().y) {
+                return true;
+            }
+            return false;
+        });
+
+    }
+
 };
 
 
-setInterval(draw, 10);
+
+$(document).ready(function () {
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    const gameState = new GameState(canvas.width, canvas.height);
+    const gameCanvas = new Canvas(canvas, ctx, gameState);
+
+    window.gameState = gameState;
+
+    document.onkeydown = function (key) {
+        handleKeyPress(key);
+    }
+    const renderGameInterval = setInterval(function () {
+        gameCanvas.clearRect();
+        gameCanvas.drawGrid();
+        gameCanvas.draw();
+        gameCanvas.drawScore();
+    }, 3)
+    const tickSnakeInterval = setInterval(function () {
+        gameState.move();
+        gameState.checkIfCollideWithApple();
+        if (gameState.checkIfCollideWithWall() || gameState.checkIfCollideWithTail()) {
+            clearInterval(tickSnakeInterval);
+            clearInterval(renderGameInterval);
+        }
+    }, 20)
+});
+
+
+function handleKeyPress(key) {
+    switch (key.keyCode) {
+        case 37:
+            gameState.changeDirection(-5, 0);
+            break;
+        case 38:
+            gameState.changeDirection(0, -5);
+            break;
+        case 39:
+            gameState.changeDirection(5, 0);
+            break;
+        case 40:
+            gameState.changeDirection(0, 5);
+            break;
+    }
+}
