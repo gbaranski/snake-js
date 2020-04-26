@@ -95,7 +95,7 @@ class Canvas {
     drawScore() {
         this.ctx.fillStyle = "gray";
         this.ctx.font = "10px Montserrat";
-        this.ctx.fillText(`Score: ${gameState.score}`, 5, 10);
+        this.ctx.fillText(`Score: ${gameState.score}`, 10, 15);
     }
     clearRect() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
