@@ -100,6 +100,16 @@ class Canvas {
     clearRect() {
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
+    drawLoseView() {
+        if(localStorage.getItem('hScore') < this.gameState.score || localStorage.getItem('hScore') == null) {
+            localStorage.setItem('hScore', this.gameState.score);
+        }
+        this.ctx.fillStyle = "black";
+        this.ctx.font = "20px Montserrat";
+        this.ctx.textAlign = "center";
+        this.ctx.fillText(`Score: ${gameState.score}`, canvas.width/2, canvas.height/2);
+        this.ctx.fillText(`Highest score: ${localStorage.getItem('hScore')}`, canvas.width/2, canvas.height/2 + 30); 
+    } 
 }
 class GameState {
     constructor(canvasWidth, canvasHeight) {
@@ -183,6 +193,7 @@ $(document).ready(function () {
         if (gameState.checkIfCollideWithWall() || gameState.checkIfCollideWithTail()) {
             clearInterval(tickSnakeInterval);
             clearInterval(renderGameInterval);
+            gameCanvas.drawLoseView();
         }
     }, 20)
 });
