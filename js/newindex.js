@@ -12,15 +12,15 @@ class Snake {
     }
     extend(dx, dy) {
         const { x, y } = this.parts[this.parts.length - 1]
-        this.parts.push(new Part(x-dx, y-dy))
+        this.parts.push(new Part(x - dx, y - dy))
     }
     draw(ctx) {
         this.parts.forEach((part, index) => {
             ctx.beginPath();
             ctx.arc(part.x, part.y, 10, 0, Math.PI * 2);
-            if(index == 0) {
+            if (index == 0) {
                 ctx.fillStyle = "#ff0000";
-            } else{
+            } else {
                 ctx.fillStyle = `rgb(${255 * index / this.parts.length * index % 3}, ${255 * index / this.parts.length}, ${255 * index / this.parts.length * index % 3})`;
             }
             ctx.fill();
@@ -46,16 +46,21 @@ class Snake {
 }
 
 class Apple {
+    constructor() {
+        this.appleIcon = new Image();
+        this.appleIcon.src = "assets/apple.png";
+        this.scaleMultiplier = 5;
+    }
     respawn(canvasWidth, canvasHeight) {
-        this.x = Math.floor(Math.random() * Math.floor((canvasWidth / 1.1) / 10)) * 10 ;
+        this.scaleMultiplier = 0;
+        this.x = Math.floor(Math.random() * Math.floor((canvasWidth / 1.1) / 10)) * 10;
         this.y = Math.floor(Math.random() * Math.floor((canvasHeight / 1.3) / 10)) * 10;
     }
     draw(ctx) {
-        ctx.beginPath();
-        ctx.rect(this.x, this.y, 20, 20);
-        ctx.strokeStyle = "#ff0000";
-        ctx.stroke();
-        ctx.closePath();
+        if(this.scaleMultiplier < 5) {
+            this.scaleMultiplier = this.scaleMultiplier + 0.3;
+        }
+        this.appleObject = ctx.drawImage(this.appleIcon, this.x, this.y, this.appleIcon.width * this.scaleMultiplier / 100, this.appleIcon.height * this.scaleMultiplier / 100);
     }
     getPosistion() {
         return {
@@ -110,7 +115,7 @@ class GameState {
         this.snake.move(this.dx || 0, this.dy || 0);
     }
     changeDirection(dx, dy) {
-        if(this.dx == -dx || this.dy == -dy && this.snake.getTail().length > 1) {
+        if (this.dx == -dx || this.dy == -dy && this.snake.getTail().length > 1) {
         } else {
             this.dx = dx;
             this.dy = dy;
@@ -118,8 +123,8 @@ class GameState {
 
     }
     checkIfCollideWithApple() {
-        if (Math.abs(this.snake.getHeadPosition().x - this.apple.getPosistion().x) < 20
-            && Math.abs(this.snake.getHeadPosition().y - this.apple.getPosistion().y) < 20) {
+        if (Math.abs(this.snake.getHeadPosition().x - this.apple.getPosistion().x) < 30
+            && Math.abs(this.snake.getHeadPosition().y - this.apple.getPosistion().y) < 30) {
             this.apple.respawn(this.canvasWidth, this.canvasHeight);
             this.snake.extend(this.dx || 0, this.dy || 0);
             this.score = this.score + 1;
@@ -142,13 +147,13 @@ class GameState {
     }
     checkIfCollideWithTail() {
         return this.snake.getTail().some(coordinates => {
-            if(coordinates.x === this.snake.getHeadPosition().x 
-            && coordinates.y === this.snake.getHeadPosition().y) {
+            if (coordinates.x === this.snake.getHeadPosition().x
+                && coordinates.y === this.snake.getHeadPosition().y) {
                 return true;
             }
             return false;
         });
-        
+
     }
 
 };
@@ -157,7 +162,7 @@ class GameState {
 
 $(document).ready(function () {
     const canvas = document.getElementById("canvas");
-    const  ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d");
     const gameState = new GameState(canvas.width, canvas.height);
     const gameCanvas = new Canvas(canvas, ctx, gameState);
 
@@ -180,8 +185,6 @@ $(document).ready(function () {
             clearInterval(renderGameInterval);
         }
     }, 20)
-
-
 });
 
 
