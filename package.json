@@ -1,0 +1,22 @@
+{
+  "name": "snake-js",
+  "version": "1.0.0",
+  "description": "snake in javascript",
+  "main": "index.html",
+  "scripts": {
+    "start": "http-server -c 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gbaranski/snake-js.git"
+  },
+  "author": "gbaranski",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/gbaranski/snake-js/issues"
+  },
+  "homepage": "https://github.com/gbaranski/snake-js#readme",
+  "dependencies": {
+    "http-server": "^0.12.3"
+  }
+}

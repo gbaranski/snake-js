@@ -183,7 +183,7 @@ $(document).ready(function () {
     }
     const renderGameInterval = setInterval(function () {
         gameCanvas.clearRect();
-        gameCanvas.drawGrid();
+        // gameCanvas.drawGrid();
         gameCanvas.draw();
         gameCanvas.drawScore();
     }, 3)
